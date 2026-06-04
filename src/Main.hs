@@ -33,7 +33,7 @@ app = (component emptyModel updateModel viewModel)
 emptyModel :: Model
 emptyModel = (0, 0)
 -----------------------------------------------------------------------------
-updateModel :: Action -> Effect parent Model Action
+updateModel :: Action -> Effect parent props Model Action
 updateModel (HandlePointer pointer) = this .= client pointer
 -----------------------------------------------------------------------------
 data Action = HandlePointer PointerEvent
