@@ -40,8 +40,8 @@ data Action = HandlePointer PointerEvent
 -----------------------------------------------------------------------------
 type Model = (Double, Double)
 -----------------------------------------------------------------------------
-viewModel :: Model -> View Model Action
-viewModel (x, y) =
+viewModel :: props -> Model -> View Model Action
+viewModel _ (x, y) =
   vfrag
     [ H.h1_ 
       [ CSS.style_ [ CSS.fontFamily "monospace" ] 
