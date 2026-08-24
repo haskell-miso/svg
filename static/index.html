@@ -1,16 +1,189 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title> miso-svg </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>miso-svg — Interactive SVG in Haskell</title>
+    <meta name="description" content="Interactive, animated SVG graphics written in pure Haskell with the miso framework, compiled to WebAssembly. Spirographs, Lissajous curves and pointer trails — no hand-written JavaScript.">
+    <link rel="canonical" href="https://svg.haskell-miso.org/">
+    <meta name="theme-color" content="#0e1018">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://svg.haskell-miso.org/">
+    <meta property="og:title" content="miso-svg — Interactive SVG in Haskell">
+    <meta property="og:description" content="Spirographs, Lissajous curves and pointer trails rendered as SVG from pure Haskell views, compiled to WebAssembly with miso.">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="miso-svg — Interactive SVG in Haskell">
+    <meta name="twitter:description" content="Interactive SVG demos written in Haskell, compiled to WebAssembly with the miso framework.">
+    <link rel="icon" href="favicon.ico">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "miso-svg",
+      "url": "https://svg.haskell-miso.org/",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Web",
+      "description": "Interactive SVG demos written in Haskell and compiled to WebAssembly with the miso framework.",
+      "codeRepository": "https://github.com/haskell-miso/miso-svg"
+    }
+    </script>
+    <style>
+      :root {
+        --bg: #0e1018;
+        --panel: #171a26;
+        --panel-edge: #262b3d;
+        --text: #e8eaf2;
+        --muted: #9aa1b5;
+        --accent: #b48cfa;
+        --accent-2: #64d8ff;
+        color-scheme: dark;
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f5f6fa;
+          --panel: #ffffff;
+          --panel-edge: #e2e5ef;
+          --text: #1c2030;
+          --muted: #5b6274;
+          --accent: #7c3aed;
+          --accent-2: #0284c7;
+          color-scheme: light;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+      }
+      .app { max-width: 1100px; margin: 0 auto; padding: 1.25rem; }
+      .hero { text-align: center; padding: 2.25rem 0 1.5rem; }
+      .hero h1 {
+        margin: 0 0 .5rem;
+        font-size: clamp(1.9rem, 5vw, 2.8rem);
+        letter-spacing: -.02em;
+      }
+      .hero h1 a { color: var(--text); text-decoration: none; }
+      .hero h1 a:hover { color: var(--accent); }
+      .tagline {
+        margin: 0 auto 1.1rem;
+        max-width: 42rem;
+        color: var(--muted);
+        font-size: 1.05rem;
+      }
+      .gh {
+        display: inline-block;
+        padding: .5rem 1.1rem;
+        border: 1px solid var(--panel-edge);
+        border-radius: 999px;
+        background: var(--panel);
+        color: var(--text);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: .92rem;
+        transition: border-color .15s ease, transform .15s ease;
+      }
+      .gh:hover { border-color: var(--accent); transform: translateY(-1px); }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.25rem;
+        align-items: start;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--panel-edge);
+        border-radius: 16px;
+        padding: 1.25rem;
+      }
+      .card.wide { grid-column: 1 / -1; }
+      .card h2 { margin: 0 0 .35rem; font-size: 1.25rem; letter-spacing: -.01em; }
+      .hint { margin: 0 0 1rem; color: var(--muted); font-size: .92rem; }
+      .hint code {
+        font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+        font-size: .85em;
+        background: var(--bg);
+        border-radius: 6px;
+        padding: .1em .35em;
+      }
+      .stage {
+        display: block;
+        width: 100%;
+        aspect-ratio: 1;
+        border-radius: 12px;
+        background:
+          radial-gradient(circle at 50% 40%, rgba(180, 140, 250, .08), transparent 65%),
+          var(--bg);
+        border: 1px solid var(--panel-edge);
+        touch-action: none;
+      }
+      .paint { aspect-ratio: 2 / 1; cursor: crosshair; }
+      .stage * { pointer-events: none; }
+      .watermark {
+        fill: var(--muted);
+        opacity: .35;
+        font-size: 30px;
+        font-family: inherit;
+      }
+      .controls { display: flex; flex-direction: column; gap: .45rem; margin-top: 1rem; }
+      .slider { display: grid; grid-template-columns: 8.5rem 1fr 2.6rem; gap: .6rem; align-items: center; }
+      .slider-name { color: var(--muted); font-size: .88rem; }
+      .slider-val {
+        text-align: right;
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: .88rem;
+        color: var(--accent-2);
+      }
+      input[type="range"] { width: 100%; accent-color: var(--accent); }
+      .btn {
+        align-self: flex-start;
+        padding: .45rem 1.1rem;
+        border-radius: 8px;
+        border: 1px solid var(--panel-edge);
+        background: var(--bg);
+        color: var(--text);
+        font-size: .92rem;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .btn:hover { border-color: var(--accent); }
+      .foot { text-align: center; color: var(--muted); font-size: .9rem; padding: 2rem 0 1rem; }
+      .foot a { color: var(--accent); text-decoration: none; }
+      .foot a:hover { text-decoration: underline; }
+      body:has(> .app) .boot, body:has(> .stage) .boot { display: none; }
+      .boot {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted);
+        font-family: ui-sans-serif, system-ui, sans-serif;
+      }
+      .boot .spin {
+        width: 42px; height: 42px;
+        border-radius: 50%;
+        border: 3px solid var(--panel-edge);
+        border-top-color: var(--accent);
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      @media (max-width: 560px) {
+        .slider { grid-template-columns: 6.5rem 1fr 2.4rem; }
+        .app { padding: .9rem; }
+      }
+    </style>
   </head>
-
   <body>
-
-    <script src="index.js" type="module"></script>
-
+    <div class="boot">
+      <div class="spin" aria-hidden="true"></div>
+      <p>Loading Haskell WebAssembly&hellip;</p>
+      <noscript>miso-svg is an interactive WebAssembly demo and needs JavaScript enabled.</noscript>
+    </div>
+    <script type="module" src="index.js"></script>
   </body>
 </html>
-
