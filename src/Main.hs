@@ -34,15 +34,15 @@ app = (component emptyModel updateModel viewModel)
 emptyModel :: Model
 emptyModel = (0, 0)
 -----------------------------------------------------------------------------
-updateModel :: Action -> Effect parent props Model Action
+updateModel :: Action -> Effect context props Model Action
 updateModel (HandlePointer pointer) = this .= client pointer
 -----------------------------------------------------------------------------
 data Action = HandlePointer PointerEvent
 -----------------------------------------------------------------------------
 type Model = (Double, Double)
 -----------------------------------------------------------------------------
-viewModel :: props -> Model -> View Model Action
-viewModel _ (x, y) =
+viewModel :: context -> props -> Model -> View context Model Action
+viewModel _ _ (x, y) =
   vfrag
     [ H.h1_ 
       [ CSS.style_ [ CSS.fontFamily "monospace" ] 
