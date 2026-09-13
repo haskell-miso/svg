@@ -41,8 +41,8 @@ data Action = HandlePointer PointerEvent
 -----------------------------------------------------------------------------
 type Model = (Double, Double)
 -----------------------------------------------------------------------------
-viewModel :: context -> props -> Model -> View context Model Action
-viewModel _ _ (x, y) =
+viewModel :: Model -> View context props Model Action
+viewModel (x, y) =
   vfrag
     [ H.h1_ 
       [ CSS.style_ [ CSS.fontFamily "monospace" ] 
